@@ -9,7 +9,7 @@ There's no new driver to learn here. `SdGraphics::drawImage()` is your Lab 6 `lo
 | File | What it is | Where it goes |
 |---|---|---|
 | `sd_studio.html` | Makes images and fonts and writes them to the card. Chrome or Edge. | Stays here |
-| `SDWriter.bin` | SD Writer 2.0. Same idea as Lab 6, now with folders and fonts. | Dragged onto the board when you load the card |
+| `SDWriter.bin` | SD Writer 2.1. Same idea as Lab 6, now with folders and fonts. | Dragged onto the board when you load the card |
 | `sdcard/DEMO/`, `sdcard/FONTS/` | The demo's picture and two fonts | On your card |
 | `src/r565.h`, `r565.c` | The file formats, and helpers to read them | `Core/Inc`, `Core/Src` |
 | `src/SdGraphics.hpp`, `.cpp` | Draws an image or a line of text from the card | `Core/Inc`, `Core/Src` |
@@ -31,6 +31,7 @@ git checkout -b sd-demo
 Your Lab 6 images stay where they are; this adds two folders next to them.
 
 1. Card in the shield, USB cable in. Drag `SDWriter.bin` onto the **NOD_G474RE** drive. The screen goes black with a gray bar; the square at the right end is green if it found the card.
+   If the square stays red, unplug the USB cable, reseat the card, and plug back in. With 2.1 the square also turns green on its own a second or so after a card goes in.
 2. Open `sd_studio.html` (double-click it), click **Connect to the board** and pick the STLink COM port. Close any serial terminal that has it open first.
 3. Go to the **Card** tab. Open the `sdcard` folder in File Explorer, select `DEMO` and `FONTS` together, and drag both onto the drop area. (Or use **Choose a folder…**, once for `DEMO` and once for `FONTS`.) You'll see each file land on the board's screen as it's written. The fonts are 192 small files, so give it a minute.
 4. In the file list, open `FONTS` and click **Try text** next to `SANS20B`. That takes you down to **Text on the board's screen** with the font picked; type something and click **Draw it**. If you see your text on the board, the card is ready.
