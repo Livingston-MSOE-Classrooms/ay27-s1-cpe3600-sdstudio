@@ -1,0 +1,14 @@
+name=SANS20B
+family=DejaVu Sans
+size=20
+height=24
+baseline=19
+bold=1
+italic=0
+mono=0
+fg=0xF547
+bg=0x192C
+first=0x20
+last=0x7E
+count=95
+files=one R565 image per character, named by its code in hex (041.565 = 'A')

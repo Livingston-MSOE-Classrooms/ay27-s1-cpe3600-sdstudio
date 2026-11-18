@@ -1,0 +1,1416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SD Studio</title>
+<style>
+:root {
+  --bg: #f5f6f8; --panel: #ffffff; --text: #1d2330; --muted: #5d6677;
+  --line: #d9dde5; --accent: #1e2761; --accent2: #f2a93b; --ok: #1f8a4c;
+  --bad: #b3261e; --chip: #eef0f5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151c; --panel: #1b2029; --text: #e8ecf3; --muted: #9aa3b5;
+    --line: #2d3442; --accent: #8fa2ff; --accent2: #f2a93b; --ok: #4cc386;
+    --bad: #ff7b72; --chip: #252b37;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header.top { position: sticky; top: 0; z-index: 5; background: var(--panel);
+  border-bottom: 1px solid var(--line); }
+header.top .in { max-width: 1180px; margin: 0 auto; padding: 10px 16px;
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+header.top h1 { font-size: 19px; margin: 0 8px 0 0; }
+nav.tabs { display: flex; gap: 4px; }
+nav.tabs button { border-radius: 7px 7px 0 0; border-bottom: none; }
+nav.tabs button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+main { max-width: 1180px; margin: 0 auto; padding: 16px 16px 48px; }
+h2 { font-size: 16px; margin: 0 0 10px; }
+h3 { font-size: 14px; margin: 12px 0 6px; color: var(--muted); font-weight: 600; }
+p { margin: 6px 0; }
+.sub { color: var(--muted); font-size: 13px; }
+.panel { background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: minmax(300px, 380px) 1fr; gap: 16px; align-items: start; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+label.f { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--muted); }
+label.c { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; }
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.form .wide { grid-column: 1 / -1; }
+input[type=text], input[type=number], select, textarea {
+  font: inherit; font-size: 14px; color: var(--text); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; width: 100%; }
+textarea { resize: vertical; min-height: 56px; }
+input[type=color] { width: 44px; height: 30px; padding: 0 2px; border: 1px solid var(--line);
+  border-radius: 6px; background: var(--bg); }
+input[type=number] { width: 100%; }
+button { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--chip);
+  color: var(--text); border-radius: 7px; padding: 6px 12px; cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.danger { color: var(--bad); }
+button.small { padding: 3px 8px; font-size: 13px; }
+button:disabled { opacity: .45; cursor: default; }
+.status { font-weight: 600; font-size: 14px; }
+.status.ok { color: var(--ok); } .status.bad { color: var(--bad); }
+code { background: var(--chip); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+table { width: 100%; border-collapse: collapse; }
+td, th { text-align: left; padding: 5px 4px; border-bottom: 1px solid var(--line); font-size: 14px; }
+th { color: var(--muted); font-weight: 500; font-size: 13px; }
+td.num { font-variant-numeric: tabular-nums; }
+td.act { text-align: right; white-space: nowrap; }
+td.act button { margin-left: 4px; }
+.drop { border: 2px dashed var(--line); border-radius: 10px; padding: 16px;
+  text-align: center; color: var(--muted); cursor: pointer; }
+.drop.over { border-color: var(--accent); color: var(--text); }
+.items { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px; margin-top: 12px; }
+.item { border: 1px solid var(--line); border-radius: 8px; padding: 8px; display: flex;
+  flex-direction: column; gap: 6px; }
+.item .pic { background: repeating-conic-gradient(var(--chip) 0 25%, transparent 0 50%) 0 0 / 16px 16px;
+  border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  min-height: 120px; max-height: 300px; overflow: hidden; }
+.item canvas { max-width: 100%; max-height: 300px; image-rendering: pixelated; display: block; }
+.item .meta { font-size: 12px; color: var(--muted); }
+.item .two { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.item .act { display: flex; gap: 6px; flex-wrap: wrap; }
+.item .act button { flex: 1; padding: 4px 6px; font-size: 13px; white-space: nowrap; }
+.item input[type=range] { width: 100%; }
+.bar { height: 6px; background: var(--chip); border-radius: 3px; overflow: hidden; }
+.bar > div { height: 100%; width: 0; background: var(--accent); }
+.bar.done > div { background: var(--ok); } .bar.fail > div { background: var(--bad); }
+#log { font: 12px/1.4 ui-monospace, Consolas, monospace; white-space: pre-wrap;
+  max-height: 170px; overflow: auto; color: var(--muted); margin: 0; }
+.warn { color: var(--bad); }
+.hidden { display: none !important; }
+.screen { background: #000; border: 6px solid #222; border-radius: 8px; display: inline-block; }
+.screen canvas { display: block; image-rendering: pixelated; }
+.glyphs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; max-height: 260px; overflow: auto; }
+.glyph { display: flex; flex-direction: column; align-items: center; border: 1px solid var(--line);
+  border-radius: 4px; padding: 3px; font: 10px ui-monospace, Consolas, monospace; color: var(--muted); }
+.glyph canvas { image-rendering: pixelated; }
+.swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+.swatches button { padding: 2px 8px; font-size: 12px; }
+.hex { font: 12px ui-monospace, Consolas, monospace; color: var(--muted); }
+.crumbs button { padding: 2px 8px; font-size: 13px; }
+.sendbox { margin-top: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.sendbox .bar { flex: 1; min-width: 120px; }
+.note { background: var(--chip); border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <h1>SD Studio</h1>
+  <nav class="tabs">
+    <button data-tab="images" class="on">Images</button>
+    <button data-tab="fonts">Fonts</button>
+    <button data-tab="card">Card</button>
+    <button data-tab="help">Help</button>
+  </nav>
+  <span style="flex:1"></span>
+  <button class="primary" id="connect">Connect to the board</button>
+  <button id="disconnect" class="hidden">Disconnect</button>
+  <span class="status" id="connStatus">Not connected</span>
+</div></header>
+<main>
+  <section class="panel hidden" id="unsupported">
+    <p class="warn"><b>This browser can't talk to the board.</b> Making and saving files works anywhere, but writing to the card through the board needs Web Serial: Chrome or Edge.</p>
+  </section>
+
+  <!-- ===================================================== IMAGES -->
+  <div id="tab-images">
+    <section class="panel">
+      <div class="grid2">
+        <div>
+          <h2>Images to .565</h2>
+          <p class="sub">Any rectangle, any size. Each file is an 8-byte header (<code>R565</code>, width, height) and then the pixels, RGB565 high byte first. A 240 × 272 image can also be saved headerless, the Lab 6 way.</p>
+          <div class="form" style="margin-top:10px">
+            <label class="f wide">Size
+              <select id="imSize">
+                <option value="240x320">Full screen, portrait (240 × 320)</option>
+                <option value="320x240">Full screen, landscape (320 × 240)</option>
+                <option value="240x272" selected>Lab 6 viewer area (240 × 272)</option>
+                <option value="orig">Original size (shrunk to fit 320 × 320)</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </label>
+            <label class="f">Width <input type="number" id="imW" min="1" max="2048" value="240"></label>
+            <label class="f">Height <input type="number" id="imH" min="1" max="2048" value="272"></label>
+            <label class="f wide">Fit
+              <select id="imFit">
+                <option value="cover">Crop to fill the size</option>
+                <option value="pad">Fit inside, pad with the background color</option>
+                <option value="shrink">Fit inside, no padding (keeps the shape; output may be smaller)</option>
+                <option value="stretch">Stretch to the size</option>
+              </select>
+            </label>
+            <label class="f">Background
+              <span class="row"><input type="color" id="imBg" value="#000000"><span class="hex" id="imBgHex">0x0000</span></span>
+            </label>
+            <label class="f">Card folder
+              <input type="text" id="imDir" value="IMAGES" placeholder="(root)">
+            </label>
+            <label class="c"><input type="checkbox" id="imDither" checked> Dither (smoother gradients)</label>
+            <label class="c"><input type="checkbox" id="imLab6"> Headerless (Lab 6) when 240 × 272</label>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button id="imApply">Apply to all</button>
+            <span class="sub">New pictures take these settings; each card can change its own.</span>
+          </div>
+        </div>
+        <div>
+          <div class="drop" id="imDrop">Drop pictures here, or click to choose them.<br>
+            <span class="sub">JPEG, PNG, GIF, WebP, BMP; or .565 files to look at or convert again.</span></div>
+          <input type="file" id="imPick" accept="image/*,.565" multiple class="hidden">
+          <div class="items" id="imItems"></div>
+          <div class="sendbox">
+            <button id="imZip">Download .zip</button>
+            <button id="imFolder">Save to a folder…</button>
+            <button class="primary" id="imSend" disabled>Write to the card</button>
+            <button class="danger" id="imClear">Clear</button>
+            <div class="bar" id="imBar"><div></div></div>
+            <span class="sub" id="imStatus"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================================================== FONTS -->
+  <div id="tab-fonts" class="hidden">
+    <section class="panel">
+      <div class="grid2">
+        <div>
+          <h2>Font generator</h2>
+          <p class="sub">One folder per font and size, one .565 image per character named by its code in hex (<code>041.565</code> is A), plus <code>FONT.TXT</code>. Glyphs are already in your colors, so drawing text is just drawing images side by side.</p>
+          <div class="form" style="margin-top:10px">
+            <label class="f wide">Font
+              <select id="fnFamily"></select>
+            </label>
+            <div class="wide row">
+              <button class="small" id="fnLoad">Load a font file…</button>
+              <input type="file" id="fnFile" accept=".ttf,.otf,.woff,.woff2" class="hidden">
+              <span class="sub" id="fnLoaded">.ttf, .otf, .woff</span>
+            </div>
+            <label class="f">Sizes (pixels, comma list)
+              <input type="text" id="fnSizes" value="16, 24">
+            </label>
+            <label class="f">Style
+              <span class="row" style="gap:14px">
+                <label class="c"><input type="checkbox" id="fnBold"> <b>Bold</b></label>
+                <label class="c"><input type="checkbox" id="fnItalic"> <i>Italic</i></label>
+              </span>
+            </label>
+            <label class="f">Text color
+              <span class="row"><input type="color" id="fnFg" value="#ffffff"><span class="hex" id="fnFgHex"></span></span>
+            </label>
+            <label class="f">Background
+              <span class="row"><input type="color" id="fnBg" value="#000000"><span class="hex" id="fnBgHex"></span>
+              <button class="small" id="fnSwap" title="Swap the colors">⇄</button></span>
+            </label>
+            <div class="wide swatches" id="fnSwatches"></div>
+            <label class="f wide">Characters
+              <select id="fnSet">
+                <option value="ascii">Printable ASCII, 0x20 to 0x7E (95)</option>
+                <option value="digits">Digits and number punctuation</option>
+                <option value="upper">Upper case, digits, punctuation</option>
+                <option value="latin1">ASCII + Latin-1 (0x20–0x7E, 0xA0–0xFF)</option>
+                <option value="custom">Just these characters…</option>
+              </select>
+            </label>
+            <label class="f wide hidden" id="fnCustomWrap">Characters to include
+              <input type="text" id="fnCustom" value="0123456789:. -">
+            </label>
+            <label class="f">Width
+              <select id="fnMono">
+                <option value="prop">Proportional</option>
+                <option value="mono">Fixed (every glyph as wide as the widest)</option>
+              </select>
+            </label>
+            <label class="f">Edges
+              <select id="fnAA">
+                <option value="aa">Smooth (blended into the background)</option>
+                <option value="crisp">Crisp (two colors only)</option>
+              </select>
+            </label>
+            <label class="f">Extra space between letters (px)
+              <input type="number" id="fnSpacing" value="0" min="0" max="16">
+            </label>
+            <label class="f">Padding above / below (px)
+              <span class="row" style="flex-wrap:nowrap"><input type="number" id="fnPadT" value="0" min="0" max="16"><input type="number" id="fnPadB" value="0" min="0" max="16"></span>
+            </label>
+            <label class="f">Folder name (5 letters max; size and B/I are added)
+              <input type="text" id="fnName" maxlength="5">
+            </label>
+            <label class="f">Card folder
+              <input type="text" id="fnDir" value="FONTS">
+            </label>
+            <div class="wide sub" id="fnFolders"></div>
+          </div>
+        </div>
+        <div>
+          <div class="row">
+            <label class="f" style="flex:1">Sample text
+              <textarea id="fnSample" rows="4">Hello, CPE 3600!
+0123456789 °C 12:34
+The quick brown fox jumps</textarea>
+            </label>
+          </div>
+          <div class="row" style="margin-top:6px">
+            <label class="f">Preview size <select id="fnPrevSize"></select></label>
+            <label class="f">Zoom <select id="fnZoom"><option>1</option><option selected>2</option><option>3</option></select></label>
+            <span class="sub" id="fnStats"></span>
+          </div>
+          <div class="sub warn" id="fnMissing"></div>
+          <div class="row" style="margin-top:8px; align-items:flex-start">
+            <div class="screen"><canvas id="fnScreen" width="240" height="320"></canvas></div>
+            <div style="flex:1; min-width:200px">
+              <h3>Glyphs</h3>
+              <div class="glyphs" id="fnGlyphs"></div>
+            </div>
+          </div>
+          <div class="sendbox">
+            <button id="fnZip">Download .zip</button>
+            <button id="fnFolder">Save to a folder…</button>
+            <button class="primary" id="fnSend" disabled>Write to the card</button>
+            <button id="fnTry" disabled title="Draws the sample text on the board's screen from the card">Try on the board</button>
+            <div class="bar" id="fnBar"><div></div></div>
+            <span class="sub" id="fnStatus"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================================================== CARD -->
+  <div id="tab-card" class="hidden">
+    <section class="panel">
+      <h2>Put SDWriter.bin on the board</h2>
+      <ol style="margin:4px 0 0 18px; padding:0">
+        <li>Card in the shield's socket, shield on the board, USB cable in.</li>
+        <li>Drag <code>SDWriter.bin</code> (next to this page) onto the <b>NOD_G474RE</b> drive. The drive disappears and comes back while the board reprograms itself.</li>
+        <li>The screen goes black with a gray bar at the bottom; the square at its right is green if the card mounted.</li>
+        <li>Click <b>Connect to the board</b> at the top and pick the STLink virtual COM port. Close any serial terminal that has it open first.</li>
+      </ol>
+      <p class="sub">When you're done, flash your own project back on from CubeIDE. Have a card reader? You don't need the board at all: save the files from the Images or Fonts tab and drag them onto the card.</p>
+    </section>
+    <section class="panel">
+      <div class="row">
+        <h2 style="margin:0">On the card</h2>
+        <span id="cardInfo" class="sub">Connect to see the card.</span>
+        <span style="flex:1"></span>
+        <button id="cdNew" disabled>New folder</button>
+        <button id="cdRefresh" disabled>Refresh</button>
+        <button class="danger" id="cdFormat" disabled>Format card…</button>
+      </div>
+      <div class="row crumbs" id="cdCrumbs" style="margin-top:8px"></div>
+      <table style="margin-top:6px">
+        <thead><tr><th>Name</th><th>Size</th><th></th></tr></thead>
+        <tbody id="cdFiles"><tr><td colspan="3" class="sub">—</td></tr></tbody>
+      </table>
+      <div class="drop" id="cdDrop" style="margin-top:12px">Drop files or whole folders here to copy them into this folder as they are.<br>
+        <span class="sub">Names must be 8.3 (up to 8 letters, a dot, up to 3). Pictures go through the Images tab first.</span></div>
+      <input type="file" id="cdPick" multiple class="hidden">
+      <input type="file" id="cdDir" webkitdirectory multiple class="hidden">
+      <div class="sendbox"><button id="cdPickDir">Choose a folder…</button><div class="bar" id="cdBar"><div></div></div><span class="sub" id="cdStatus"></span></div>
+    </section>
+    <section class="panel">
+      <h2>Text on the board's screen</h2>
+      <div class="row">
+        <label class="f">Font folder <select id="txFont" style="min-width:180px"></select></label>
+        <label class="f">x <input type="number" id="txX" value="4" style="width:70px"></label>
+        <label class="f">y <input type="number" id="txY" value="4" style="width:70px"></label>
+        <label class="c" style="margin-top:16px"><input type="checkbox" id="txClear" checked> Clear the screen first</label>
+      </div>
+      <label class="f" style="margin-top:8px">Text <textarea id="txText">Hello from the SD card!</textarea></label>
+      <div class="row" style="margin-top:8px"><button class="primary" id="txGo" disabled>Draw it</button><span class="sub" id="txStatus"></span></div>
+    </section>
+  </div>
+
+  <!-- ===================================================== HELP -->
+  <div id="tab-help" class="hidden">
+    <section class="panel">
+      <h2>The files</h2>
+      <p><b>.565 images.</b> Bytes 0–3 are <code>R565</code>, bytes 4–5 the width and 6–7 the height (both little-endian, like the Cortex-M4), then width × height pixels, two bytes each, high byte first, row by row from the top left. That pixel order is what the ILI9341 wants after RAMWR, so a row can go from the card to the display untouched: set the window to the image's rectangle, then send the bytes. A file with no header that's exactly 130,560 bytes is a 240 × 272 Lab 6 image.</p>
+      <pre class="note" style="white-space:pre-wrap">typedef struct {
+    char     magic[4];   // 'R' '5' '6' '5'
+    uint16_t width;      // pixels
+    uint16_t height;
+} r565_header_t;         // 8 bytes, then width * height * 2 bytes of pixels</pre>
+      <p><b>Fonts.</b> <code>FONTS/SANS16B/</code> holds <code>020.565</code> (space) to <code>07E.565</code> (~), one R565 image per character, all the same height. Draw a string by opening each character's file and drawing it where the last one ended; the image width is the advance. <code>FONT.TXT</code> lists the height, baseline, colors and character range as <code>key=value</code> lines.</p>
+      <p><b>Names.</b> The card uses 8.3 names: up to 8 letters, digits, <code>_</code> or <code>-</code>, a dot and up to 3 more. The page makes every name fit.</p>
+      <h2 style="margin-top:14px">Getting files onto the card</h2>
+      <p>With a card reader: <b>Download .zip</b> (unzip it, then drag the folders onto the card) or <b>Save to a folder…</b> (pick the card's drive itself and the page writes straight to it, folders and all). Without one: put <code>SDWriter.bin</code> on the board (Card tab) and use <b>Write to the card</b>.</p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Log</h2>
+    <pre id="log"></pre>
+  </section>
+</main>
+<script>
+// ---- PROTOCOL BEGIN -------------------------------------------------------
+// The SD Writer protocol (see writer.hpp in firmware/src) and the file
+// formats. Kept free of anything browser-specific so the host tests can run
+// it in Node.
+//   request  'L' '6' cmd    seq len16 payload crc16   (little-endian)
+//   reply    'L' '6' status seq len16 payload crc16
+const CMD = { INFO: 0x01, LIST: 0x02, OPEN: 0x10, DATA: 0x11, CLOSE: 0x12,
+              DELETE: 0x13, SHOW: 0x14, MKDIR: 0x15, TEXT: 0x16, FORMAT: 0x20 };
+const STATUS = ['OK', 'CRC', 'UNKNOWN', 'NO_CARD', 'FS_ERROR', 'SEQUENCE', 'BAD_ARG'];
+const LAB6_W = 240, LAB6_H = 272, LAB6_BYTES = LAB6_W * LAB6_H * 2;
+const CHUNK = 4096;
+
+function crc16(bytes) {
+  let crc = 0xFFFF;
+  for (const b of bytes) {
+    crc ^= b << 8;
+    for (let i = 0; i < 8; i++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+    }
+  }
+  return crc;
+}
+
+function makeFrame(cmd, seq, payload) {
+  const n = payload.length;
+  const f = new Uint8Array(8 + n);
+  f[0] = 0x4C; f[1] = 0x36; f[2] = cmd; f[3] = seq; f[4] = n & 0xFF; f[5] = n >> 8;
+  f.set(payload, 6);
+  const c = crc16(f.subarray(2, 6 + n));
+  f[6 + n] = c & 0xFF; f[7 + n] = c >> 8;
+  return f;
+}
+
+// Collects bytes and pulls out complete, CRC-good replies.
+class FrameReader {
+  constructor() { this.buf = new Uint8Array(0); }
+  push(bytes) {
+    const b = new Uint8Array(this.buf.length + bytes.length);
+    b.set(this.buf); b.set(bytes, this.buf.length); this.buf = b;
+  }
+  next() {
+    for (;;) {
+      let i = 0;
+      while (i + 1 < this.buf.length && !(this.buf[i] === 0x4C && this.buf[i + 1] === 0x36)) i++;
+      this.buf = this.buf.subarray(i);
+      if (this.buf.length < 8) return null;
+      const n = this.buf[4] | (this.buf[5] << 8);
+      if (n > 4200) { this.buf = this.buf.subarray(1); continue; }
+      if (this.buf.length < 8 + n) return null;
+      const body = this.buf.subarray(2, 6 + n);
+      const crc = this.buf[6 + n] | (this.buf[7 + n] << 8);
+      if (crc16(body) !== crc) { this.buf = this.buf.subarray(1); continue; }
+      const r = { status: this.buf[2], seq: this.buf[3], payload: this.buf.slice(6, 6 + n) };
+      this.buf = this.buf.subarray(8 + n);
+      return r;
+    }
+  }
+}
+
+class WriterError extends Error {
+  constructor(status, text) { super(`${STATUS[status] || status}: ${text}`); this.status = status; }
+}
+
+const te = new TextEncoder(), td = new TextDecoder();
+
+function u32(n) { return [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF]; }
+function u16(n) { return [n & 0xFF, (n >>> 8) & 0xFF]; }
+
+// Text the board sees: one byte per character (Latin-1); others become '?'.
+function latin1(s) { return Uint8Array.from([...s].map(c => { const k = c.codePointAt(0); return k < 256 ? k : 63; })); }
+
+// One board. reader: { read() -> {value, done} }, writer: { write(Uint8Array) }
+class SdWriterLink {
+  constructor(reader, writer, log = () => {}) {
+    this.reader = reader; this.writer = writer; this.log = log;
+    this.frames = new FrameReader(); this.waiting = null;
+    this.seq = Math.floor(Math.random() * 256);
+    this.retries = 0;
+    this.closed = false;
+    this.proto = 1;
+    this.pump = this.readLoop();
+  }
+  async readLoop() {
+    try {
+      for (;;) {
+        const { value, done } = await this.reader.read();
+        if (done) break;
+        this.frames.push(value);
+        let f;
+        while ((f = this.frames.next())) {
+          if (this.waiting && f.seq === this.waiting.seq) {
+            const w = this.waiting; this.waiting = null; w.resolve(f);
+          } // a late reply to an old request: ignore it
+        }
+      }
+    } catch (e) { /* port closed */ }
+    this.closed = true;
+    if (this.waiting) { this.waiting.reject(new Error('disconnected')); this.waiting = null; }
+  }
+  waitReply(seq, ms) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { if (this.waiting && this.waiting.seq === seq) this.waiting = null; resolve(null); }, ms);
+      this.waiting = { seq, resolve: f => { clearTimeout(timer); resolve(f); },
+                       reject: e => { clearTimeout(timer); reject(e); } };
+    });
+  }
+  // One request: sends it, and sends the same thing again (same seq) if the
+  // reply doesn't come in time or comes back CRC. Throws on any other error.
+  async request(cmd, payload = new Uint8Array(0), { timeout = 2000, tries = 4 } = {}) {
+    while (this.busy) await this.busy;          // one request at a time
+    let release; this.busy = new Promise(r => (release = r));
+    try {
+      this.seq = (this.seq + 1) & 0xFF;
+      const seq = this.seq, frame = makeFrame(cmd, seq, payload);
+      for (let t = 0; t < tries; t++) {
+        if (this.closed) throw new Error('disconnected');
+        const p = this.waitReply(seq, timeout);
+        await this.writer.write(frame);
+        const r = await p;
+        if (r && r.status === 1) { this.retries++; this.log(`retry (${td.decode(r.payload)})`); continue; }
+        if (!r) { this.retries++; this.log('retry (no reply)'); continue; }
+        if (r.status !== 0) throw new WriterError(r.status, td.decode(r.payload));
+        return r.payload;
+      }
+      throw new Error('the board stopped answering');
+    } finally { this.busy = null; release(); }
+  }
+  async info() {
+    try {
+      const t = td.decode(await this.request(CMD.INFO, undefined, { timeout: 3000 }));
+      const o = parseInfo(t);
+      this.proto = +(o.proto || 1);
+      return { ...o, card: o.card };
+    } catch (e) {
+      if (e.status === 3) {
+        const o = parseInfo(e.message.replace(/^NO_CARD: /, ''));
+        this.proto = +(o.proto || 1);
+        return { ...o, card: false };
+      }
+      throw e;
+    }
+  }
+  // Everything in one folder: [{ name, size, dir }]. Pages through big ones.
+  async list(path = '') {
+    const out = [];
+    for (let skip = 0; ;) {
+      let payload = new Uint8Array(0);
+      if (this.proto >= 2) payload = new Uint8Array([...u16(skip), ...te.encode(path)]);
+      else if (path) throw new Error('this SDWriter only knows the root; put SDWriter.bin 2.0 on the board');
+      const t = td.decode(await this.request(CMD.LIST, payload, { timeout: 5000 }));
+      let more = -1;
+      for (const l of t.split('\n').filter(Boolean)) {
+        const m = l.match(/^\+ (\d+)$/);
+        if (m) { more = +m[1]; continue; }
+        const [name, size] = l.split(' ');
+        if (name.endsWith('/')) out.push({ name: name.slice(0, -1), size: 0, dir: true });
+        else out.push({ name, size: +size, dir: false });
+      }
+      if (more < 0) break;
+      skip = more;
+    }
+    return out;
+  }
+  async upload(path, bytes, onProgress = () => {}) {
+    await this.request(CMD.OPEN, new Uint8Array([...u32(bytes.length), ...te.encode(path)]), { timeout: 5000 });
+    for (let off = 0; off < bytes.length; off += CHUNK) {
+      const part = bytes.subarray(off, Math.min(off + CHUNK, bytes.length));
+      const p = new Uint8Array(4 + part.length);
+      p.set(u32(off)); p.set(part, 4);
+      await this.request(CMD.DATA, p, { timeout: 3000 });
+      onProgress(Math.min(off + CHUNK, bytes.length) / bytes.length);
+    }
+    if (bytes.length === 0) onProgress(1);
+    await this.request(CMD.CLOSE, undefined, { timeout: 5000 });
+  }
+  async mkdir(path) { await this.request(CMD.MKDIR, te.encode(path), { timeout: 5000 }); }
+  async remove(path) { await this.request(CMD.DELETE, te.encode(path), { timeout: 5000 }); }
+  // A folder and everything in it.
+  async removeTree(path) {
+    for (const e of await this.list(path)) {
+      const p = path + '/' + e.name;
+      if (e.dir) await this.removeTree(p); else await this.remove(p);
+    }
+    await this.remove(path);
+  }
+  async show(path) { await this.request(CMD.SHOW, te.encode(path), { timeout: 10000 }); }
+  async text(fontDir, str, x = 0, y = 0, clear = true) {
+    const p = new Uint8Array([clear ? 1 : 0, ...u16(x), ...u16(y), ...te.encode(fontDir), 0, ...latin1(str).slice(0, 160)]);
+    const r = td.decode(await this.request(CMD.TEXT, p, { timeout: 30000 }));
+    const o = {}; for (const kv of r.split(' ')) { const [k, v] = kv.split('='); o[k] = +v; }
+    return o;
+  }
+  async format() { await this.request(CMD.FORMAT, te.encode('FORMAT'), { timeout: 180000, tries: 1 }); }
+}
+
+function parseInfo(text) {
+  const o = { version: text.split('\n')[0] };
+  for (const l of text.split('\n')) { const m = l.match(/^(\w+)=(.*)$/); if (m) o[m[1]] = m[2]; }
+  return o;
+}
+
+/* ---- Colors and pixels ---------------------------------------------------- */
+const to565 = (r, g, b) => ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+const from565 = c => [((c >> 11) & 0x1F) * 255 / 31 | 0, ((c >> 5) & 0x3F) * 255 / 63 | 0, (c & 0x1F) * 255 / 31 | 0];
+const hexToRgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const hex565 = h => '0x' + to565(...hexToRgb(h)).toString(16).toUpperCase().padStart(4, '0');
+
+// RGBA (from a canvas) to RGB565, high byte first. Transparent pixels are
+// laid over bg ([r,g,b]). With dither, Floyd-Steinberg error diffusion.
+function rgbaTo565(rgba, w = rgba.length / 4, h = 1, { dither = false, bg = [0, 0, 0] } = {}) {
+  const n = w * h, out = new Uint8Array(n * 2);
+  const f = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const a = rgba[4 * i + 3] / 255;
+    for (let k = 0; k < 3; k++) f[3 * i + k] = rgba[4 * i + k] * a + bg[k] * (1 - a);
+  }
+  const lv = [31, 63, 31];
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x, q = [0, 0, 0];
+      for (let k = 0; k < 3; k++) {
+        const v = Math.min(255, Math.max(0, f[3 * i + k]));
+        q[k] = Math.round(v * lv[k] / 255);
+        if (dither) {
+          const e = v - q[k] * 255 / lv[k];
+          if (x + 1 < w) f[3 * (i + 1) + k] += e * 7 / 16;
+          if (y + 1 < h) {
+            if (x > 0) f[3 * (i + w - 1) + k] += e * 3 / 16;
+            f[3 * (i + w) + k] += e * 5 / 16;
+            if (x + 1 < w) f[3 * (i + w + 1) + k] += e / 16;
+          }
+        }
+      }
+      const c = (q[0] << 11) | (q[1] << 5) | q[2];
+      out[2 * i] = c >> 8; out[2 * i + 1] = c & 0xFF;
+    }
+  }
+  return out;
+}
+
+function rgb565ToRgba(bytes, offset = 0) {
+  const n = (bytes.length - offset) >> 1, out = new Uint8ClampedArray(n * 4);
+  for (let i = 0; i < n; i++) {
+    const c = (bytes[offset + 2 * i] << 8) | bytes[offset + 2 * i + 1];
+    const [r, g, b] = from565(c);
+    out[4 * i] = r; out[4 * i + 1] = g; out[4 * i + 2] = b; out[4 * i + 3] = 255;
+  }
+  return out;
+}
+
+/* ---- File formats ---------------------------------------------------------- */
+// R565: 'R' '5' '6' '5', u16 width, u16 height, then the pixels.
+function makeR565(w, h, pixels) {
+  const f = new Uint8Array(8 + pixels.length);
+  f.set([0x52, 0x35, 0x36, 0x35, ...u16(w), ...u16(h)]);
+  f.set(pixels, 8);
+  return f;
+}
+
+// { w, h, offset, kind } for an R565 or Lab 6 file, or null.
+function parse565(bytes) {
+  if (bytes.length >= 8 && bytes[0] === 0x52 && bytes[1] === 0x35 && bytes[2] === 0x36 && bytes[3] === 0x35) {
+    const w = bytes[4] | (bytes[5] << 8), h = bytes[6] | (bytes[7] << 8);
+    if (w > 0 && h > 0 && bytes.length === 8 + 2 * w * h) return { w, h, offset: 8, kind: 'R565' };
+  }
+  if (bytes.length === LAB6_BYTES) return { w: LAB6_W, h: LAB6_H, offset: 0, kind: 'Lab 6' };
+  return null;
+}
+
+// An 8.3 name part: upper case letters, digits, _ and -, at most n long.
+function name83(s, n = 8) {
+  const t = s.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+  return t.slice(0, n);
+}
+const isName83 = s => /^[A-Z0-9_-]{1,8}(\.[A-Z0-9_-]{1,3})?$/.test(s.toUpperCase());
+function cleanDir(s) {
+  return s.split(/[\\/]+/).map(p => name83(p)).filter(Boolean).join('/');
+}
+const glyphName = code => code.toString(16).toUpperCase().padStart(3, '0') + '.565';
+
+/* ---- ZIP (stored, no compression) ------------------------------------------ */
+const CRC32_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC32_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+
+// files: [{ path: 'FONTS/SANS16/041.565', bytes }] -> Uint8Array of a .zip
+function makeZip(files, date = new Date()) {
+  const dt = ((date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1)) & 0xFFFF;
+  const dd = (((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate()) & 0xFFFF;
+  const parts = [], central = [];
+  let off = 0;
+  for (const f of files) {
+    const name = te.encode(f.path), crc = crc32(f.bytes), n = f.bytes.length;
+    const local = new Uint8Array([0x50, 0x4B, 3, 4, 10, 0, 0, 0, 0, 0, ...u16(dt), ...u16(dd),
+      ...u32(crc), ...u32(n), ...u32(n), ...u16(name.length), 0, 0]);
+    parts.push(local, name, f.bytes);
+    central.push(new Uint8Array([0x50, 0x4B, 1, 2, 20, 0, 10, 0, 0, 0, 0, 0, ...u16(dt), ...u16(dd),
+      ...u32(crc), ...u32(n), ...u32(n), ...u16(name.length), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      ...u32(off)]), name);
+    off += local.length + name.length + n;
+  }
+  const cdSize = central.reduce((s, b) => s + b.length, 0);
+  const end = new Uint8Array([0x50, 0x4B, 5, 6, 0, 0, 0, 0, ...u16(files.length), ...u16(files.length),
+    ...u32(cdSize), ...u32(off), 0, 0]);
+  const all = [...parts, ...central, end];
+  const out = new Uint8Array(all.reduce((s, b) => s + b.length, 0));
+  let p = 0; for (const b of all) { out.set(b, p); p += b.length; }
+  return out;
+}
+// ---- PROTOCOL END ---------------------------------------------------------
+</script>
+<script>
+/* ==== The page =============================================================== */
+const $ = id => document.getElementById(id);
+const logEl = $('log');
+function log(msg) { logEl.textContent += msg + '\n'; logEl.scrollTop = logEl.scrollHeight; }
+const kb = n => n < 10240 ? n.toLocaleString() + ' bytes' : (n / 1024).toFixed(n < 1048576 ? 1 : 0) + ' KB';
+const debounce = (fn, ms = 150) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+
+/* ---- Tabs ---- */
+for (const b of document.querySelectorAll('nav.tabs button')) {
+  b.onclick = () => {
+    for (const o of document.querySelectorAll('nav.tabs button')) {
+      o.classList.toggle('on', o === b);
+      $('tab-' + o.dataset.tab).classList.toggle('hidden', o !== b);
+    }
+    if (b.dataset.tab === 'card' && link && !cardLoaded) run(() => refreshCard());
+  };
+}
+
+/* ---- Connection ---- */
+let port = null, link = null, reader = null, writer = null, cardLoaded = false;
+let busy = false;
+if (!('serial' in navigator)) { $('unsupported').classList.remove('hidden'); $('connect').disabled = true; }
+
+function setConnected(on) {
+  $('connect').classList.toggle('hidden', on);
+  $('disconnect').classList.toggle('hidden', !on);
+  for (const id of ['cdNew', 'cdRefresh', 'cdFormat', 'txGo']) $(id).disabled = !on;
+  updateSendButtons();
+  const s = $('connStatus');
+  s.textContent = on ? 'Connected' : 'Not connected';
+  s.className = 'status' + (on ? ' ok' : '');
+  if (!on) { cardLoaded = false; $('cardInfo').textContent = 'Connect to see the card.'; }
+}
+function updateSendButtons() {
+  const on = !!link && !busy;
+  $('imSend').disabled = !on || images.length === 0;
+  $('fnSend').disabled = !on || !fontSet;
+  $('fnTry').disabled = !on || !fontSet;
+}
+
+$('connect').onclick = async () => {
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 921600, bufferSize: 65536 });
+    reader = port.readable.getReader();
+    writer = port.writable.getWriter();
+    link = new SdWriterLink(reader, { write: b => writer.write(b) }, log);
+    const info = await link.info();
+    setConnected(true);
+    log(`connected at 921600 baud: ${info.version}`);
+    if (link.proto < 2) {
+      log('This board has the Lab 6 SD Writer (1.0): root folder only, no fonts. Put SDWriter.bin from this folder on it for everything else.');
+      $('connStatus').textContent = 'Connected (SDWriter 1.0)';
+    }
+    showInfo(info);
+    if (!$('tab-card').classList.contains('hidden')) await refreshCard();
+  } catch (e) {
+    log('connect: ' + e.message);
+    $('connStatus').textContent = e.message.includes('stopped answering')
+      ? 'No answer. Is SDWriter.bin on the board?' : 'Could not connect';
+    $('connStatus').className = 'status bad';
+    await disconnect(true);
+  }
+};
+
+async function disconnect(quiet) {
+  try { if (reader) { await reader.cancel(); reader.releaseLock(); } } catch (e) {}
+  try { if (writer) writer.releaseLock(); } catch (e) {}
+  try { if (port) await port.close(); } catch (e) {}
+  port = reader = writer = link = null;
+  setConnected(false);
+  if (quiet) { $('connStatus').className = 'status bad'; }
+}
+$('disconnect').onclick = () => disconnect(false);
+
+async function run(fn, done) {
+  try { await fn(); if (done) log(done); return true; }
+  catch (e) {
+    log('error: ' + e.message);
+    if (e.message === 'disconnected') disconnect(true);
+    return false;
+  }
+}
+
+/* ---- Getting files out: the card, a .zip, a folder ---- */
+function download(name, bytes, type = 'application/octet-stream') {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([bytes], { type }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+async function saveToFolder(files) {
+  if (!window.showDirectoryPicker) {
+    log('This browser can\'t save into a folder; use Download .zip instead (Chrome and Edge can).');
+    return;
+  }
+  let root;
+  try { root = await window.showDirectoryPicker({ mode: 'readwrite' }); }
+  catch (e) { return; }                       // cancelled
+  let n = 0;
+  for (const f of files) {
+    const parts = f.path.split('/');
+    let d = root;
+    for (const p of parts.slice(0, -1)) d = await d.getDirectoryHandle(p, { create: true });
+    const h = await d.getFileHandle(parts[parts.length - 1], { create: true });
+    const w = await h.createWritable();
+    await w.write(f.bytes); await w.close(); n++;
+  }
+  log(`saved ${n} file${n === 1 ? '' : 's'} into ${root.name}`);
+}
+
+// Writes files ([{ path, bytes, onProgress? }]) to the card, one bar for all.
+async function sendFiles(files, bar, status) {
+  if (!link) return 0;
+  if (link.proto < 2 && files.some(f => f.path.includes('/'))) {
+    log('This board has SDWriter 1.0, which only writes to the root folder. Put SDWriter.bin 2.0 on it.');
+    return 0;
+  }
+  busy = true; updateSendButtons();
+  const fill = bar.firstChild, total = files.reduce((s, f) => s + f.bytes.length, 0) || 1;
+  bar.className = 'bar'; fill.style.width = '0';
+  const t0 = Date.now(); let ok = 0, done = 0;
+  link.retries = 0;
+  try {
+    for (const f of files) {
+      status.textContent = `writing ${f.path}…`;
+      try {
+        await link.upload(f.path, f.bytes, p => {
+          fill.style.width = ((done + p * f.bytes.length) / total * 100).toFixed(1) + '%';
+          if (f.onProgress) f.onProgress(p);
+        });
+        ok++;
+        if (f.onDone) f.onDone(true);
+      } catch (e) {
+        log(`${f.path}: ${e.message}`);
+        if (f.onDone) f.onDone(false);
+        if (e.message === 'disconnected' || e.message.includes('stopped answering')) break;
+      }
+      done += f.bytes.length;
+    }
+  } finally { busy = false; updateSendButtons(); }
+  bar.className = 'bar ' + (ok === files.length ? 'done' : 'fail'); fill.style.width = '100%';
+  const msg = `${ok} of ${files.length} written in ${((Date.now() - t0) / 1000).toFixed(1)} s` +
+    (link && link.retries ? `, ${link.retries} retries` : '');
+  status.textContent = msg; log(msg);
+  if (link && link.closed) disconnect(true);
+  cardLoaded = false;
+  return ok;
+}
+
+/* ==== IMAGES ================================================================= */
+const images = [];
+let nextImgId = 1;
+
+function imDefaults() {
+  return { w: +$('imW').value || 240, h: +$('imH').value || 272, fit: $('imFit').value,
+           bg: $('imBg').value, dither: $('imDither').checked, lab6: $('imLab6').checked,
+           preset: $('imSize').value };
+}
+function syncSizePreset() {
+  const v = $('imSize').value;
+  const custom = v === 'custom' || v === 'orig';
+  if (!custom) { const [w, h] = v.split('x'); $('imW').value = w; $('imH').value = h; }
+  $('imW').disabled = $('imH').disabled = v !== 'custom';
+}
+$('imSize').onchange = syncSizePreset;
+$('imBg').oninput = () => { $('imBgHex').textContent = hex565($('imBg').value); };
+syncSizePreset();
+
+$('imApply').onclick = () => {
+  const d = imDefaults();
+  for (const it of images) {
+    Object.assign(it, { fit: d.fit, bg: d.bg, dither: d.dither, lab6: d.lab6 });
+    setSize(it, d);
+    refreshCard565(it);
+  }
+};
+
+function setSize(it, d) {
+  if (d.preset === 'orig') {
+    const s = Math.min(1, 320 / it.src.width, 320 / it.src.height);
+    it.w = Math.max(1, Math.round(it.src.width * s)); it.h = Math.max(1, Math.round(it.src.height * s));
+  } else { it.w = d.w; it.h = d.h; }
+}
+
+function uniqueName(base, except) {
+  const taken = new Set(images.filter(i => i !== except).map(i => i.name));
+  base = name83(base) || 'IMG';
+  if (!taken.has(base)) return base;
+  for (let k = 2; ; k++) {
+    const sfx = String(k), b = base.slice(0, 8 - sfx.length) + sfx;
+    if (!taken.has(b)) return b;
+  }
+}
+
+const imDrop = $('imDrop'), imPick = $('imPick');
+imDrop.onclick = () => imPick.click();
+imDrop.ondragover = e => { e.preventDefault(); imDrop.classList.add('over'); };
+imDrop.ondragleave = () => imDrop.classList.remove('over');
+imDrop.ondrop = e => { e.preventDefault(); imDrop.classList.remove('over'); addImages([...e.dataTransfer.files]); };
+imPick.onchange = () => { const f = [...imPick.files]; imPick.value = ''; addImages(f); };
+
+async function addImages(list) {
+  for (const file of list) {
+    const d = imDefaults();
+    const it = { id: nextImgId++, file: file.name, fx: 0.5, fy: 0.35, ...d };
+    if (/\.565$/i.test(file.name)) {
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const m = parse565(buf);
+      if (!m) { log(`${file.name}: not an R565 or Lab 6 .565 file (${buf.length} bytes)`); continue; }
+      it.src = await createImageBitmap(new ImageData(rgb565ToRgba(buf.subarray(0, m.offset + 2 * m.w * m.h), m.offset), m.w, m.h));
+      it.w = m.w; it.h = m.h; it.fit = 'stretch'; it.dither = false;
+      it.lab6 = m.kind === 'Lab 6';
+      log(`${file.name}: ${m.kind}, ${m.w} × ${m.h}`);
+    } else {
+      try { it.src = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+      catch (e) { log(`${file.name}: not a picture this browser can read`); continue; }
+      setSize(it, d);
+    }
+    it.name = uniqueName(file.name.replace(/\.[^.]*$/, ''));
+    images.push(it); addImageCard(it);
+  }
+  updateSendButtons();
+}
+
+// Draws the picture at its output size and converts it; it.pixels is the
+// RGB565 data, and the canvas shows what the panel will show.
+function renderImage(it) {
+  const sw = it.src.width, sh = it.src.height;
+  let W = it.w, H = it.h, dx = 0, dy = 0, dw = W, dh = H;
+  if (it.fit === 'cover') {
+    const s = Math.max(W / sw, H / sh); dw = sw * s; dh = sh * s;
+    dx = (W - dw) * it.fx; dy = (H - dh) * it.fy;
+  } else if (it.fit === 'pad') {
+    const s = Math.min(W / sw, H / sh); dw = sw * s; dh = sh * s;
+    dx = (W - dw) / 2; dy = (H - dh) / 2;
+  } else if (it.fit === 'shrink') {
+    const s = Math.min(W / sw, H / sh);
+    W = dw = Math.max(1, Math.round(sw * s)); H = dh = Math.max(1, Math.round(sh * s));
+  }
+  const c = it.canvas; c.width = W; c.height = H;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.clearRect(0, 0, W, H);
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(it.src, dx, dy, dw, dh);
+  const d = ctx.getImageData(0, 0, W, H);
+  it.pixels = rgbaTo565(d.data, W, H, { dither: it.dither, bg: hexToRgb(it.bg) });
+  it.ow = W; it.oh = H;
+  d.data.set(rgb565ToRgba(it.pixels));
+  ctx.putImageData(d, 0, 0);
+  // show small things bigger
+  const z = Math.max(1, Math.min(4, Math.floor(200 / Math.max(W, H))));
+  c.style.width = (W * z) + 'px';
+}
+
+function imageBytes(it) {
+  if (it.lab6 && it.ow === LAB6_W && it.oh === LAB6_H) return it.pixels;
+  return makeR565(it.ow, it.oh, it.pixels);
+}
+function imagePath(it) { const d = cleanDir($('imDir').value); return (d ? d + '/' : '') + it.name + '.565'; }
+
+function addImageCard(it) {
+  const el = document.createElement('div'); el.className = 'item'; it.el = el;
+  el.innerHTML = `
+    <div class="pic"><canvas></canvas></div>
+    <div class="meta" data-k="meta"></div>
+    <div class="two">
+      <label class="f">Name <input type="text" data-k="name" maxlength="8"></label>
+      <label class="f">Fit <select data-k="fit">
+        <option value="cover">Crop</option><option value="pad">Pad</option>
+        <option value="shrink">Fit inside</option><option value="stretch">Stretch</option></select></label>
+      <label class="f">Width <input type="number" data-k="w" min="1" max="2048"></label>
+      <label class="f">Height <input type="number" data-k="h" min="1" max="2048"></label>
+    </div>
+    <label class="f" data-k="fxw">Crop left / right <input type="range" data-k="fx" min="0" max="1" step="0.01"></label>
+    <label class="f" data-k="fyw">Crop up / down <input type="range" data-k="fy" min="0" max="1" step="0.01"></label>
+    <div class="row" style="gap:12px">
+      <label class="c"><input type="checkbox" data-k="dither"> Dither</label>
+      <label class="c"><input type="color" data-k="bg"> Background</label>
+    </div>
+    <div class="act"><button data-k="save">Save .565</button><button data-k="png">PNG</button><button data-k="rm">Remove</button></div>
+    <div class="bar"><div></div></div>`;
+  const q = k => el.querySelector(`[data-k="${k}"]`);
+  it.canvas = el.querySelector('canvas'); it.bar = el.querySelector('.bar');
+  q('name').value = it.name; q('fit').value = it.fit; q('w').value = it.w; q('h').value = it.h;
+  q('fx').value = it.fx; q('fy').value = it.fy; q('dither').checked = it.dither; q('bg').value = it.bg;
+  q('name').onchange = () => { it.name = uniqueName(q('name').value || it.file, it); q('name').value = it.name; refreshCard565(it); };
+  q('fit').onchange = () => { it.fit = q('fit').value; refreshCard565(it); };
+  q('w').onchange = () => { it.w = Math.max(1, Math.min(2048, +q('w').value || 1)); refreshCard565(it); };
+  q('h').onchange = () => { it.h = Math.max(1, Math.min(2048, +q('h').value || 1)); refreshCard565(it); };
+  q('fx').oninput = () => { it.fx = +q('fx').value; refreshCard565(it); };
+  q('fy').oninput = () => { it.fy = +q('fy').value; refreshCard565(it); };
+  q('dither').onchange = () => { it.dither = q('dither').checked; refreshCard565(it); };
+  q('bg').oninput = () => { it.bg = q('bg').value; refreshCard565(it); };
+  q('save').onclick = () => download(it.name + '.565', imageBytes(it));
+  q('png').onclick = () => it.canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = it.name + '_check.png'; a.click(); });
+  q('rm').onclick = () => { images.splice(images.indexOf(it), 1); el.remove(); updateSendButtons(); };
+  $('imItems').append(el);
+  refreshCard565(it);
+}
+
+function refreshCard565(it) {
+  const el = it.el, q = k => el.querySelector(`[data-k="${k}"]`);
+  q('fit').value = it.fit; q('w').value = it.w; q('h').value = it.h;
+  q('dither').checked = it.dither; q('bg').value = it.bg;
+  q('fxw').classList.toggle('hidden', it.fit !== 'cover');
+  q('fyw').classList.toggle('hidden', it.fit !== 'cover');
+  renderImage(it);
+  const bytes = imageBytes(it);
+  const kind = bytes.length === LAB6_BYTES && it.lab6 ? 'Lab 6 (no header)' : 'R565';
+  q('meta').textContent = `${it.file} → ${imagePath(it)} · ${it.ow} × ${it.oh} · ${kb(bytes.length)} · ${kind}`;
+  q('meta').title = q('meta').textContent;
+}
+$('imDir').onchange = () => { $('imDir').value = cleanDir($('imDir').value); images.forEach(refreshCard565); };
+$('imLab6').onchange = () => { for (const it of images) { it.lab6 = $('imLab6').checked; refreshCard565(it); } };
+
+const imageFiles = () => images.map(it => ({ path: imagePath(it), bytes: imageBytes(it), it }));
+$('imZip').onclick = () => { if (images.length) download('images_565.zip', makeZip(imageFiles()), 'application/zip'); };
+$('imFolder').onclick = () => { if (images.length) run(() => saveToFolder(imageFiles())); };
+$('imClear').onclick = () => { images.length = 0; $('imItems').innerHTML = ''; updateSendButtons(); };
+$('imSend').onclick = () => run(async () => {
+  const files = imageFiles().map(f => ({ ...f,
+    onProgress: p => { f.it.bar.className = 'bar'; f.it.bar.firstChild.style.width = (p * 100).toFixed(0) + '%'; },
+    onDone: ok => { f.it.bar.className = 'bar ' + (ok ? 'done' : 'fail'); f.it.bar.firstChild.style.width = '100%'; } }));
+  const lab6 = files.filter(f => f.bytes.length === LAB6_BYTES && !/^IMG[1-9]\.565$/.test(f.path));
+  if (lab6.length) log('Note: the Lab 6 viewer only loads IMG1.565, IMG2.565, … from the root folder.');
+  await sendFiles(files, $('imBar'), $('imStatus'));
+});
+
+/* ==== FONTS ================================================================== */
+const FAMILIES = ['sans-serif', 'serif', 'monospace', 'Arial', 'Arial Black', 'Arial Narrow', 'Bahnschrift',
+  'Calibri', 'Cambria', 'Candara', 'Comic Sans MS', 'Consolas', 'Constantia', 'Corbel', 'Courier New',
+  'Franklin Gothic Medium', 'Georgia', 'Impact', 'Lucida Console', 'Lucida Sans Unicode', 'Palatino Linotype',
+  'Segoe UI', 'Segoe Print', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana',
+  'Helvetica', 'Menlo', 'Monaco', 'DejaVu Sans', 'DejaVu Sans Mono', 'DejaVu Serif', 'Liberation Sans',
+  'Liberation Mono', 'Ubuntu', 'Ubuntu Mono', 'Noto Sans', 'Roboto'];
+const GENERIC = new Set(['sans-serif', 'serif', 'monospace', 'cursive', 'fantasy', 'system-ui']);
+const loadedFonts = [];
+const cssFamily = f => GENERIC.has(f) ? f : `"${f.replace(/"/g, '')}"`;
+
+// A font is installed if text in it measures differently from both fallbacks.
+function installed(f) {
+  if (GENERIC.has(f) || loadedFonts.includes(f)) return true;
+  const c = document.createElement('canvas').getContext('2d'), s = 'mmmmmmmmmmlliWW@#0O';
+  return ['monospace', 'serif', 'sans-serif'].some(fb => {
+    c.font = `40px ${fb}`; const a = c.measureText(s).width;
+    c.font = `40px ${cssFamily(f)}, ${fb}`; return c.measureText(s).width !== a;
+  });
+}
+function fillFamilies(select) {
+  const sel = $('fnFamily'), keep = select || sel.value || 'Arial';
+  sel.innerHTML = '';
+  const have = [...loadedFonts.map(f => [f, f + ' (loaded)']),
+                ...FAMILIES.filter(installed).map(f => [f, f])];
+  for (const [v, t] of have) sel.add(new Option(t, v));
+  sel.value = have.some(([v]) => v === keep) ? keep : (have.find(([v]) => v === 'Arial') ? 'Arial' : 'sans-serif');
+}
+
+$('fnLoad').onclick = () => $('fnFile').click();
+$('fnFile').onchange = async () => {
+  const file = $('fnFile').files[0]; $('fnFile').value = '';
+  if (!file) return;
+  const fam = file.name.replace(/\.[^.]*$/, '');
+  try {
+    const face = new FontFace(fam, await file.arrayBuffer());
+    await face.load(); document.fonts.add(face);
+    if (!loadedFonts.includes(fam)) loadedFonts.push(fam);
+    fillFamilies(fam); $('fnLoaded').textContent = file.name;
+    $('fnName').value = ''; regen();
+    log(`loaded font ${file.name}`);
+  } catch (e) { log(`${file.name}: couldn't load that font (${e.message})`); }
+};
+
+const SWATCHES = [['White on black', '#ffffff', '#000000'], ['Black on white', '#000000', '#ffffff'],
+  ['Orange on navy', '#f2a93b', '#1e2761'], ['Green on black', '#33ff66', '#000000'],
+  ['Yellow on blue', '#ffff00', '#0000ff'], ['White on gray', '#ffffff', '#808080']];
+for (const [t, fg, bg] of SWATCHES) {
+  const b = document.createElement('button'); b.textContent = t;
+  b.style.background = bg; b.style.color = fg; b.style.borderColor = bg;
+  b.onclick = () => { $('fnFg').value = fg; $('fnBg').value = bg; regen(); };
+  $('fnSwatches').append(b);
+}
+$('fnSwap').onclick = () => { const a = $('fnFg').value; $('fnFg').value = $('fnBg').value; $('fnBg').value = a; regen(); };
+
+function charCodes() {
+  const r = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  switch ($('fnSet').value) {
+    case 'digits': return [...new Set([...' 0123456789+-.,:%/°'].map(c => c.codePointAt(0)))].sort((a, b) => a - b);
+    case 'upper': return r(0x20, 0x60).concat(r(0x7B, 0x7E));
+    case 'latin1': return r(0x20, 0x7E).concat(r(0xA0, 0xFF));
+    case 'custom': return [...new Set([...$('fnCustom').value].map(c => c.codePointAt(0)).filter(k => k >= 0x20 && k <= 0xFFF))].sort((a, b) => a - b);
+    default: return r(0x20, 0x7E);
+  }
+}
+function fontSizes() {
+  return [...new Set($('fnSizes').value.split(/[ ,;]+/).map(Number).filter(n => n >= 4 && n <= 200).map(Math.round))].sort((a, b) => a - b);
+}
+function folderFor(size) {
+  const st = ($('fnBold').checked ? 'B' : '') + ($('fnItalic').checked ? 'I' : '');
+  let base = name83($('fnName').value, 5) || name83($('fnFamily').value, 5) || 'FONT';
+  base = base.slice(0, Math.max(1, 8 - String(size).length - st.length));
+  return name83(base + size + st);
+}
+
+// One font at one size: { folder, size, height, baseline, glyphs: [{ code, w, h, pixels }] }
+function makeFont(size) {
+  const fam = $('fnFamily').value, bold = $('fnBold').checked, italic = $('fnItalic').checked;
+  const fg = hexToRgb($('fnFg').value), bg = hexToRgb($('fnBg').value);
+  const crisp = $('fnAA').value === 'crisp', mono = $('fnMono').value === 'mono';
+  const sp = Math.max(0, +$('fnSpacing').value || 0), padT = Math.max(0, +$('fnPadT').value || 0), padB = Math.max(0, +$('fnPadB').value || 0);
+  const font = `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${size}px ${cssFamily(fam)}`;
+  const cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.font = font;
+  const ref = ctx.measureText('ÁÇgjpqy|@');
+  const asc = Math.ceil(ref.fontBoundingBoxAscent ?? ref.actualBoundingBoxAscent);
+  const desc = Math.ceil(ref.fontBoundingBoxDescent ?? ref.actualBoundingBoxDescent);
+  const H = padT + asc + desc + padB, base = padT + asc;
+  const codes = charCodes();
+  const cells = codes.map(code => {
+    const ch = String.fromCodePoint(code), m = ctx.measureText(ch);
+    const left = Math.max(0, Math.ceil(m.actualBoundingBoxLeft || 0));
+    const right = Math.ceil(m.actualBoundingBoxRight || 0);
+    const w = Math.max(1, Math.round(m.width), left + right);
+    return { code, ch, left, w };
+  });
+  const maxW = Math.max(1, ...cells.map(c => c.w));
+  cv.width = Math.max(maxW, 1) + 4; cv.height = H;
+  ctx.font = font; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#fff';
+  const glyphs = cells.map(c => {
+    let W = c.w, x = c.left;
+    if (mono) { W = maxW; x += Math.floor((maxW - c.w) / 2); }
+    W += sp;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.fillText(c.ch, x, base);
+    const a = ctx.getImageData(0, 0, W, H).data;
+    const px = new Uint8Array(W * H * 2);
+    for (let i = 0; i < W * H; i++) {
+      let t = a[4 * i + 3] / 255;
+      if (crisp) t = t >= 0.5 ? 1 : 0;
+      const col = to565(...[0, 1, 2].map(k => Math.round(bg[k] + (fg[k] - bg[k]) * t)));
+      px[2 * i] = col >> 8; px[2 * i + 1] = col & 0xFF;
+    }
+    return { code: c.code, w: W, h: H, pixels: px };
+  });
+  return { folder: folderFor(size), size, height: H, baseline: base, family: fam, bold, italic,
+           fg: $('fnFg').value, bg: $('fnBg').value, mono, crisp, glyphs };
+}
+
+function fontTxt(f) {
+  const codes = f.glyphs.map(g => g.code);
+  return [`name=${f.folder}`, `family=${f.family}`, `size=${f.size}`, `height=${f.height}`,
+    `baseline=${f.baseline}`, `bold=${+f.bold}`, `italic=${+f.italic}`, `mono=${+f.mono}`,
+    `fg=${hex565(f.fg)}`, `bg=${hex565(f.bg)}`, `first=0x${Math.min(...codes).toString(16).toUpperCase()}`,
+    `last=0x${Math.max(...codes).toString(16).toUpperCase()}`, `count=${codes.length}`,
+    `files=one R565 image per character, named by its code in hex (041.565 = 'A')`, ''].join('\r\n');
+}
+
+let fontSet = null;    // [font per size]
+function fontFiles() {
+  const dir = cleanDir($('fnDir').value), pre = dir ? dir + '/' : '';
+  const out = [];
+  for (const f of fontSet || []) {
+    for (const g of f.glyphs) out.push({ path: `${pre}${f.folder}/${glyphName(g.code)}`, bytes: makeR565(g.w, g.h, g.pixels) });
+    out.push({ path: `${pre}${f.folder}/FONT.TXT`, bytes: te.encode(fontTxt(f)) });
+  }
+  return out;
+}
+
+function glyphCanvas(g, zoom = 1) {
+  const c = document.createElement('canvas'); c.width = g.w; c.height = g.h;
+  c.getContext('2d').putImageData(new ImageData(rgb565ToRgba(g.pixels), g.w, g.h), 0, 0);
+  c.style.width = g.w * zoom + 'px'; c.style.height = g.h * zoom + 'px';
+  return c;
+}
+
+// The sample text the way the board's TEXT command lays it out.
+function drawPreview() {
+  const scr = $('fnScreen'), ctx = scr.getContext('2d');
+  const z = +$('fnZoom').value; scr.style.width = 240 * z + 'px'; scr.style.height = 320 * z + 'px';
+  ctx.fillStyle = $('fnBg').value; ctx.fillRect(0, 0, 240, 320);
+  const f = (fontSet || []).find(x => x.size === +$('fnPrevSize').value) || (fontSet || [])[0];
+  if (!f) return;
+  const by = new Map(f.glyphs.map(g => [g.code, g]));
+  let x = 4, y = 4;
+  const missing = new Set();
+  for (const ch of $('fnSample').value) {
+    if (ch === '\n') { x = 4; y += f.height; continue; }
+    const g = by.get(ch.codePointAt(0));
+    if (!g) { missing.add(ch); continue; }
+    if (x + g.w > 240 && x > 4) { x = 4; y += f.height; }
+    if (y + g.h <= 320 && x + g.w <= 240) ctx.drawImage(glyphCanvas(g), x, y);
+    x += g.w;
+  }
+  $('fnMissing').textContent = missing.size ? `Not in this character set: ${[...missing].join(' ')}` : '';
+  const gl = $('fnGlyphs'); gl.innerHTML = '';
+  for (const g of f.glyphs) {
+    const d = document.createElement('div'); d.className = 'glyph';
+    d.title = `${glyphName(g.code)}  ${g.w} × ${g.h}`;
+    d.append(glyphCanvas(g, f.height < 20 ? 2 : 1), glyphName(g.code).slice(0, 3));
+    gl.append(d);
+  }
+}
+
+const regen = debounce(() => {
+  $('fnFgHex').textContent = hex565($('fnFg').value);
+  $('fnBgHex').textContent = hex565($('fnBg').value);
+  $('fnCustomWrap').classList.toggle('hidden', $('fnSet').value !== 'custom');
+  if (!$('fnName').value) $('fnName').placeholder = name83($('fnFamily').value, 5) || 'FONT';
+  const sizes = fontSizes();
+  if (!sizes.length || !charCodes().length) { fontSet = null; $('fnFolders').textContent = 'Give at least one size (4 to 200) and one character.'; updateSendButtons(); return; }
+  fontSet = sizes.map(makeFont);
+  const ps = $('fnPrevSize'), keep = +ps.value;
+  ps.innerHTML = ''; for (const s of sizes) ps.add(new Option(s + ' px', s));
+  ps.value = sizes.includes(keep) ? keep : sizes[0];
+  const dir = cleanDir($('fnDir').value);
+  const files = fontFiles(), bytes = files.reduce((s, f) => s + f.bytes.length, 0);
+  $('fnFolders').innerHTML = 'Makes ' + fontSet.map(f => `<code>${dir ? dir + '/' : ''}${f.folder}</code> (${f.glyphs.length} glyphs, ${f.height} px tall)`).join(', ');
+  $('fnStats').textContent = `${files.length} files, ${kb(bytes)}`;
+  drawPreview(); updateSendButtons();
+});
+for (const id of ['fnFamily', 'fnSizes', 'fnBold', 'fnItalic', 'fnFg', 'fnBg', 'fnSet', 'fnCustom', 'fnMono',
+                  'fnAA', 'fnSpacing', 'fnPadT', 'fnPadB', 'fnName', 'fnDir']) {
+  $(id).addEventListener('input', regen); $(id).addEventListener('change', regen);
+}
+$('fnSample').oninput = debounce(drawPreview, 80);
+$('fnPrevSize').onchange = drawPreview; $('fnZoom').onchange = drawPreview;
+
+$('fnZip').onclick = () => { if (fontSet) download(fontSet.map(f => f.folder).join('_') + '.zip', makeZip(fontFiles()), 'application/zip'); };
+$('fnFolder').onclick = () => { if (fontSet) run(() => saveToFolder(fontFiles())); };
+$('fnSend').onclick = () => run(() => sendFiles(fontFiles(), $('fnBar'), $('fnStatus')));
+$('fnTry').onclick = () => run(async () => {
+  const f = fontSet.find(x => x.size === +$('fnPrevSize').value) || fontSet[0];
+  const dir = cleanDir($('fnDir').value), path = (dir ? dir + '/' : '') + f.folder;
+  const r = await link.text(path, $('fnSample').value, 4, 4, true);
+  $('fnStatus').textContent = `drew ${r.drawn} characters` + (r.missing ? `, skipped ${r.missing} the card doesn't have (not in the font, or the font isn't written yet)` : '');
+});
+
+/* ==== CARD =================================================================== */
+let cwd = '';
+function showInfo(info) {
+  if (!info.card) {
+    $('cardInfo').innerHTML = '<span class="warn">No card found.</span> Check that it\'s pushed all the way in, then Refresh.';
+    return false;
+  }
+  $('cardInfo').textContent = `${info.version} · ${info.card} card, ${(+info.size_mb / 1024).toFixed(1)} GB, ${(+info.free_mb / 1024).toFixed(1)} GB free`;
+  return true;
+}
+
+async function refreshCard() {
+  const info = await link.info();
+  if (!showInfo(info)) { $('cdFiles').innerHTML = '<tr><td colspan="3" class="sub">—</td></tr>'; return; }
+  if (link.proto < 2) cwd = '';
+  const files = await link.list(cwd);
+  await refreshFontList();
+  cardLoaded = true;
+  // crumbs
+  const cr = $('cdCrumbs'); cr.innerHTML = '';
+  const parts = cwd ? cwd.split('/') : [];
+  const mk = (t, p) => { const b = document.createElement('button'); b.textContent = t; b.onclick = () => { cwd = p; run(refreshCard); }; cr.append(b); };
+  mk('Card', '');
+  parts.forEach((p, i) => { cr.append(' / '); mk(p, parts.slice(0, i + 1).join('/')); });
+  if (fontDirs.has(cwd)) {
+    const t = document.createElement('button'); t.className = 'primary'; t.style.marginLeft = '12px';
+    t.textContent = 'Try text with this font'; t.onclick = () => tryFont(cwd); cr.append(t);
+  }
+  // table
+  const tb = $('cdFiles'); tb.innerHTML = '';
+  if (cwd) {
+    const tr = document.createElement('tr'); tr.innerHTML = '<td colspan="3"><button class="small">↑ up</button></td>';
+    tr.querySelector('button').onclick = () => { cwd = parts.slice(0, -1).join('/'); run(refreshCard); };
+    tb.append(tr);
+  }
+  if (files.length === 0) tb.insertAdjacentHTML('beforeend', '<tr><td colspan="3" class="sub">Nothing here.</td></tr>');
+  files.sort((a, b) => (b.dir - a.dir) || a.name.localeCompare(b.name));
+  for (const f of files) {
+    const p = (cwd ? cwd + '/' : '') + f.name;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${f.dir ? '📁 ' : ''}${f.name}</td><td class="num">${f.dir ? 'folder' : kb(f.size)}</td><td class="act"></td>`;
+    const cell = tr.lastChild;
+    const btn = (t, fn, cls) => { const b = document.createElement('button'); b.textContent = t; b.className = 'small ' + (cls || ''); b.onclick = fn; cell.append(b); };
+    if (f.dir) btn('Open', () => { cwd = p; run(refreshCard); });
+    if (!f.dir && /\.565$/.test(f.name)) btn('Show on screen', () => run(() => link.show(p), `showing ${p}`));
+    if (f.dir && fontDirs.has(p)) btn('Try text', () => tryFont(p));
+    btn('Delete', () => {
+      if (f.dir && !confirm(`Delete the folder ${p} and everything in it?`)) return;
+      run(async () => { if (f.dir) await link.removeTree(p); else await link.remove(p); await refreshCard(); }, `deleted ${p}`);
+    }, 'danger');
+    tb.append(tr);
+  }
+}
+
+// Font folders anywhere on the card (three levels down): a folder with
+// glyph files (041.565) or a FONT.TXT in it.
+const isGlyph = n => /^[0-9A-F]{3}\.565$/.test(n);
+let fontDirs = new Set();
+async function refreshFontList() {
+  const sel = $('txFont'), keep = sel.value;
+  const found = [];
+  if (link.proto >= 2) {
+    async function scan(path, depth) {
+      let ents;
+      try { ents = await link.list(path); } catch (e) { return; }
+      if (path && ents.some(x => !x.dir && (isGlyph(x.name) || x.name === 'FONT.TXT'))) { found.push(path); return; }
+      if (depth >= 3) return;
+      for (const d of ents.filter(x => x.dir)) await scan((path ? path + '/' : '') + d.name, depth + 1);
+    }
+    await scan('', 0);
+  }
+  fontDirs = new Set(found);
+  sel.innerHTML = '';
+  for (const p of found.sort()) sel.add(new Option(p, p));
+  if (found.includes(keep)) sel.value = keep;
+  $('txGo').disabled = !link || found.length === 0;
+  if (!found.length) $('txStatus').textContent = 'No font folders on the card yet: make one on the Fonts tab.';
+  else $('txStatus').textContent = '';
+}
+
+// Picks a font folder for the text box below and takes you there.
+function tryFont(p) {
+  const sel = $('txFont');
+  if (![...sel.options].some(o => o.value === p)) sel.add(new Option(p, p));
+  sel.value = p;
+  $('txText').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('txText').focus();
+  $('txStatus').textContent = `Font: ${p}. Type something and click Draw it.`;
+}
+
+$('cdRefresh').onclick = () => run(refreshCard);
+$('cdNew').onclick = () => {
+  if (link.proto < 2) { log('SDWriter 1.0 can\'t make folders; put SDWriter.bin 2.0 on the board.'); return; }
+  const n = prompt('Folder name (up to 8 letters and digits):');
+  if (!n) return;
+  const name = name83(n);
+  if (!name) { log('That name has nothing the card can use.'); return; }
+  run(async () => { await link.mkdir((cwd ? cwd + '/' : '') + name); await refreshCard(); }, `made ${name}`);
+};
+$('cdFormat').onclick = () => {
+  if (!confirm('Format the card? Everything on it will be erased.')) return;
+  run(async () => { log('formatting (this can take a minute on a big card)...'); await link.format(); cwd = ''; await refreshCard(); }, 'formatted');
+};
+
+// Fits a file name to 8.3 (returns null if nothing usable is left).
+function fit83(name) {
+  const m = name.match(/^(.*?)(?:\.([^.]*))?$/);
+  const b = name83(m[1] || ''), e = name83(m[2] || '', 3);
+  if (!b) return null;
+  return e ? `${b}.${e}` : b;
+}
+
+// Files and folders dropped on the page, as [{ rel: 'FONTS/SANS14/041.565', file }].
+// Chrome's older entries API (webkitGetAsEntry) fails on a page opened from
+// file:// ("A URI supplied to the API was malformed..."), so this uses the
+// File System Access handles when the browser has them. Every handle has to
+// be asked for while the drop event is still running, before any await.
+function dropSources(dt) {
+  return [...dt.items].filter(it => it.kind === 'file').map(it => {
+    if (it.getAsFileSystemHandle) return { handle: it.getAsFileSystemHandle() };
+    return { entry: it.webkitGetAsEntry ? it.webkitGetAsEntry() : null, file: it.getAsFile() };
+  });
+}
+
+async function walkHandle(h, prefix, out) {
+  if (h.kind === 'file') {
+    out.push({ rel: prefix + h.name, file: await h.getFile() });
+  } else {
+    for await (const child of h.values()) await walkHandle(child, prefix + h.name + '/', out);
+  }
+}
+
+async function walkEntry(entry, prefix, out) {
+  if (entry.isFile) {
+    const file = await new Promise((res, rej) => entry.file(res, rej));
+    out.push({ rel: prefix + file.name, file });
+  } else if (entry.isDirectory) {
+    const rd = entry.createReader();
+    for (;;) {
+      const batch = await new Promise((res, rej) => rd.readEntries(res, rej));
+      if (!batch.length) break;
+      for (const e of batch) await walkEntry(e, prefix + entry.name + '/', out);
+    }
+  }
+}
+
+async function dropToFiles(sources) {
+  const out = [];
+  for (const s of sources) {
+    if (s.handle) {
+      const h = await s.handle;
+      if (h) await walkHandle(h, '', out);
+    } else if (s.entry && s.entry.isDirectory) {
+      try { await walkEntry(s.entry, '', out); }
+      catch (e) { log(`${s.entry.name}: this browser can't read a dropped folder from a page opened as a file. Use "Choose a folder…" instead.`); }
+    } else if (s.file) {
+      out.push({ rel: s.file.name, file: s.file });
+    }
+  }
+  return out;
+}
+
+async function uploadLocal(list) {
+  if (!link) { log('Connect to the board first.'); return; }
+  const files = [];
+  for (const { rel, file } of list) {
+    const parts = rel.split('/'), fixed = parts.map(fit83);
+    if (fixed.some(p => !p)) { log(`${rel}: skipped (no usable 8.3 name)`); continue; }
+    const path = (cwd ? cwd + '/' : '') + fixed.join('/');
+    if (fixed.join('/') !== rel.toUpperCase()) log(`${rel} → ${path}`);
+    files.push({ path, bytes: new Uint8Array(await file.arrayBuffer()) });
+  }
+  if (!files.length) return;
+  await sendFiles(files, $('cdBar'), $('cdStatus'));
+  await refreshCard();
+}
+const cdDrop = $('cdDrop');
+cdDrop.onclick = () => $('cdPick').click();
+cdDrop.ondragover = e => { e.preventDefault(); cdDrop.classList.add('over'); };
+cdDrop.ondragleave = () => cdDrop.classList.remove('over');
+cdDrop.ondrop = e => {
+  e.preventDefault(); cdDrop.classList.remove('over');
+  const sources = dropSources(e.dataTransfer);
+  run(async () => uploadLocal(await dropToFiles(sources)));
+};
+$('cdPickDir').onclick = () => $('cdDir').click();
+$('cdDir').onchange = () => {
+  // webkitRelativePath is "picked/sub/file": keep the picked folder's name
+  const f = [...$('cdDir').files].map(file => ({ rel: file.webkitRelativePath || file.name, file }));
+  $('cdDir').value = ''; run(() => uploadLocal(f));
+};
+$('cdPick').onchange = () => { const f = [...$('cdPick').files].map(file => ({ rel: file.name, file })); $('cdPick').value = ''; run(() => uploadLocal(f)); };
+
+$('txGo').onclick = () => run(async () => {
+  if (link.proto < 2) { log('Text needs SDWriter 2.0.'); return; }
+  if (!$('txFont').value) { $('txStatus').textContent = 'No font folder on the card yet: make one on the Fonts tab.'; return; }
+  const r = await link.text($('txFont').value, $('txText').value, +$('txX').value || 0, +$('txY').value || 0, $('txClear').checked);
+  $('txStatus').textContent = `drew ${r.drawn} characters` + (r.missing ? `, ${r.missing} the font doesn't have` : '');
+});
+
+/* ---- start ---- */
+fillFamilies();
+document.fonts.ready.then(() => regen());
+regen();
+</script>
+</body>
+</html>

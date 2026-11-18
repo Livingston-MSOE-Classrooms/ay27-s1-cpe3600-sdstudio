@@ -1,0 +1,13 @@
+# ============================================================================
+# .gitignore for CPE 3600 SD Studio
+#
+# This repo is a package, not a CubeIDE project: src/ gets copied into your
+# Lab 6 project and the sdcard/ folders onto your card. Nothing is built in
+# here, so only OS and editor cruft is ignored.
+# ============================================================================
+
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+*.zip
